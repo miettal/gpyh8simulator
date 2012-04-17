@@ -1,15 +1,13 @@
 # -*- coding:utf-8 -*-
 import sys
 import gtk
-import pprint
 import pango
 import time
 import gobject
 sys.path.append("python-h8simulator")
 from simpleh8simulator import *
 
-class GtkGladeSample:
-  
+class H8SimGUI:
   def __init__(self):
     self.builder = gtk.Builder()
     self.builder.add_from_file("gui.glade")
@@ -61,13 +59,10 @@ class GtkGladeSample:
     
   def step_event(self, widget) :
     self.runStep()
-    print "run "+("%8x" % self.sim.getProgramCounter())
     
   def reset_event(self, widget) :
     self.sim.loadEntryAddressToProgramCounter()
-    print ("%8x" % self.sim.getProgramCounter())
     self.drawSourceWindow()
-    print ("%8x" % self.sim.entryAddress)+" -> programcounter"
 
   def main(self):
     gtk.main()
@@ -96,5 +91,5 @@ class GtkGladeSample:
     self.dis_assembly.show()
 
 if __name__ == "__main__":
-  app = GtkGladeSample()
+  app = H8SimGUI()
   app.main()
