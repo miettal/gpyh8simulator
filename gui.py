@@ -4,6 +4,7 @@ import gtk
 import pprint
 import pango
 import time
+import gobject
 sys.path.append("python-h8simulator")
 from simpleh8simulator import *
 
@@ -36,6 +37,7 @@ class GtkGladeSample:
 
     self.sim = SimpleH8simulator()
     self.disAssembly = None
+    self.running = False
 
     self.window.show()
 
@@ -53,14 +55,12 @@ class GtkGladeSample:
     sys.exit(0)
 
   def run_event(self, widget) :
-    while True :
-      self.sim.runStep()
-      self.drawSourceWindow()
-      time.sleep(1)
+    self.running = not self.running
+    if self.running :
+      gobject.timeout_add(100, self.runStep)
     
   def step_event(self, widget) :
-    self.sim.runStep()
-    self.drawSourceWindow()
+    self.runStep()
     print "run "+("%8x" % self.sim.getProgramCounter())
     
   def reset_event(self, widget) :
@@ -71,6 +71,12 @@ class GtkGladeSample:
 
   def main(self):
     gtk.main()
+    
+  def runStep(self) :
+    self.sim.runStep()
+    self.drawSourceWindow()
+    if self.running :
+      gobject.timeout_add(100, self.runStep)
 
   def drawSourceWindow(self) :
     text = ''
