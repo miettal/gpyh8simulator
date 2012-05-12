@@ -11,7 +11,7 @@ from simpleh8simulator import *
 class H8SimGUI :
   def __init__(self) :
     self.builder = gtk.Builder()
-    self.builder.add_from_file("gui3.glade")
+    self.builder.add_from_file("gui.glade")
 
     self.window = self.builder.get_object("window1")
     self.filechooserdialog = self.builder.get_object("filechooserdialog1")
