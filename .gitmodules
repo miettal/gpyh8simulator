@@ -1,0 +1,3 @@
+[submodule "python-h8simulator"]
+	path = python-h8simulator
+	url = git://github.com/miettal/python-h8simulator.git
