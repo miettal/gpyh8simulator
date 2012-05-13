@@ -45,29 +45,40 @@ class H8SimGUI :
     self.treeview.get_model().append(None, ("","","", "「メニュー->ファイル->開く」からmotファイルを選択してください"))
 
     self.sim = SimpleH8simulator()
+    self.pc = 0
     self.disAssembly = None
     self.running = False
     
     self.window.show()
     
   def initView(self) :
-    listiter = self.treeview.get_model().get_iter_first()
-    while listiter :
-      self.treeview.get_model().remove(listiter)
-      listiter = self.treeview.get_model().get_iter_first()
+    i = self.treeview.get_model().iter_children(None)
+    while i :
+      self.treeview.get_model().remove(i)
+      i = self.treeview.get_model().iter_children(None)
     for k in sorted(self.disAssembly.keys()) :
-      self.treeview.get_model().append(None, ("",("%6X"%k) ,self.disAssembly[k], ""))
+      parent = self.treeview.get_model().append(None, ("",("%6X"%k) ,self.disAssembly[k], ""))
+      for x in range(8) :
+        self.treeview.get_model().append(parent, ("", "" , "", "ER%d=000000"%x))
       
   def drawView(self) :
-    listiter = self.treeview.get_model().get_iter_first()
-    while listiter :
-      if int(self.treeview.get_model().get_value(listiter, 1), 16) == self.sim.getProgramCounter() :
-        self.treeview.get_model().set_value(listiter, 0, 'ER7=')
+    i = self.treeview.get_model().iter_children(None)
+    while i :
+      if int(self.treeview.get_model().get_value(i, 1), 16) == self.pc :
+        self.treeview.get_model().set_value(i, 0, 'PC=')
+        for x in range(8) :
+          r = self.sim.get32bitRegistor(x)
+          j = self.treeview.get_model().iter_children(i)
+          while j :
+            if self.treeview.get_model().get_value(j, 3)[:3] == ("ER%d"%x) :
+              self.treeview.get_model().set_value(j, 3, "ER%d=%06X" % (x, r))
+            j = self.treeview.get_model().iter_next(j)
       else :
-        self.treeview.get_model().set_value(listiter, 0, '')
-      listiter = self.treeview.get_model().iter_next(listiter)
+        self.treeview.get_model().set_value(i, 0, '')
+      i = self.treeview.get_model().iter_next(i)
     
   def runStep(self) :
+    self.pc = self.sim.getProgramCounter()
     self.sim.runStep()
     self.drawView()
     if self.running :
@@ -85,17 +96,14 @@ class H8SimGUI :
   
   def sim_run(self, widget) :
     self.running = not self.running
-    print self.running
     if self.running :
       gobject.timeout_add(100, self.runStep)
     
   def sim_step(self, widget) :
-    self.sim.runStep()
-    self.drawView()
+    self.runStep()
     
   def sim_reset(self, widget) :
     self.sim.reset()
-    self.drawView()
     
   def main(self) :
     gtk.main()
