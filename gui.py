@@ -40,9 +40,9 @@ class H8SimGUI :
     self.treeview.append_column(gtk.TreeViewColumn('メモリ番地', gtk.CellRendererText(), text=1))
     self.treeview.append_column(gtk.TreeViewColumn('アセンブリ', gtk.CellRendererText(), text=2))
     self.treeview.append_column(gtk.TreeViewColumn('備考', gtk.CellRendererText(), text=3))
-    self.treeview.set_model(gtk.ListStore(str, str, str, str))
+    self.treeview.set_model(gtk.TreeStore(str, str, str, str))
     
-    self.treeview.get_model().append(("","","", "「メニュー->ファイル->開く」からmotファイルを選択してください"))
+    self.treeview.get_model().append(None, ("","","", "「メニュー->ファイル->開く」からmotファイルを選択してください"))
 
     self.sim = SimpleH8simulator()
     self.disAssembly = None
@@ -56,7 +56,7 @@ class H8SimGUI :
       self.treeview.get_model().remove(listiter)
       listiter = self.treeview.get_model().get_iter_first()
     for k in sorted(self.disAssembly.keys()) :
-      self.treeview.get_model().append(("",("%6X"%k) ,self.disAssembly[k], ""))
+      self.treeview.get_model().append(None, ("",("%6X"%k) ,self.disAssembly[k], ""))
       
   def drawView(self) :
     listiter = self.treeview.get_model().get_iter_first()
