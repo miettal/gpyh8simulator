@@ -136,7 +136,7 @@ class H8SimGUI :
               k = self.treeview.get_model().iter_children(j)
             address = self.sim.get32bitRegistor(7)
             while address < 0x600000 :
-              self.treeview.get_model().append(j, ("", "%08X"%address , "", "%02X"%self.sim.get8bitRegistor(address) , 0, 'N'))
+              self.treeview.get_model().append(j, ("", "%08X"%address , "", "%02X"%self.sim.get8bitMemory(address) , 0, ''))
               address += 1
             
           j = self.treeview.get_model().iter_next(j)
