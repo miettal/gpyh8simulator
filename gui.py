@@ -40,9 +40,15 @@ class H8SimGUI :
     self.treeview.append_column(gtk.TreeViewColumn('メモリ番地', gtk.CellRendererText(), text=1))
     self.treeview.append_column(gtk.TreeViewColumn('アセンブリ', gtk.CellRendererText(), text=2))
     self.treeview.append_column(gtk.TreeViewColumn('備考', gtk.CellRendererText(), text=3))
-    self.treeview.set_model(gtk.TreeStore(str, str, str, str))
+    col = gtk.TreeViewColumn('id', gtk.CellRendererText(), text=4)
+    col.set_visible(False)
+    self.treeview.append_column(col)
+    col = gtk.TreeViewColumn('id2', gtk.CellRendererText(), text=4)
+    col.set_visible(False)
+    self.treeview.append_column(col)
+    self.treeview.set_model(gtk.TreeStore(str, str, str, str, int, str))
     
-    self.treeview.get_model().append(None, ("","","", "「メニュー->ファイル->開く」からmotファイルを選択してください"))
+    self.treeview.get_model().append(None, ("","","", "「メニュー->ファイル->開く」からmotファイルを選択してください", 0, ''))
 
     self.sim = SimpleH8simulator()
     self.pc = 0
@@ -57,65 +63,82 @@ class H8SimGUI :
       self.treeview.get_model().remove(i)
       i = self.treeview.get_model().iter_children(None)
     for k in sorted(self.disAssembly.keys()) :
-      parent = self.treeview.get_model().append(None, ("",("%6X"%k) ,self.disAssembly[k], ""))
+      parent = self.treeview.get_model().append(None, ("",("%08X"%k) ,self.disAssembly[k], "", k, 'MEM'))
       for x in range(8) :
-        self.treeview.get_model().append(parent, ("", "" , "", "ER%d:00000000"%x))
-      self.treeview.get_model().append(parent, ("", "" , "", "PC :00000000"))
-      parent2 = self.treeview.get_model().append(parent, ("", "" , "", "CCR:00000000"))
-      self.treeview.get_model().append(parent2, ("", "" , "", "I :False"))
-      self.treeview.get_model().append(parent2, ("", "" , "", "UI:False"))
-      self.treeview.get_model().append(parent2, ("", "" , "", "H :False"))
-      self.treeview.get_model().append(parent2, ("", "" , "", "U :False"))
-      self.treeview.get_model().append(parent2, ("", "" , "", "N :False"))
-      self.treeview.get_model().append(parent2, ("", "" , "", "Z :False"))
-      self.treeview.get_model().append(parent2, ("", "" , "", "V :False"))
-      self.treeview.get_model().append(parent2, ("", "" , "", "C :False"))
+        self.treeview.get_model().append(parent, ("", "" , "", "ER%d:00000000"%x, x, 'ER%d'%x))
+      self.treeview.get_model().append(parent, ("", "" , "", "PC :00000000", 0, 'PC'))
+      parent2 = self.treeview.get_model().append(parent, ("", "" , "", "CCR:00000000", 0, 'CCR'))
+      self.treeview.get_model().append(parent2, ("", "" , "", "I :False", 0, 'I'))
+      self.treeview.get_model().append(parent2, ("", "" , "", "UI:False", 0, 'UI'))
+      self.treeview.get_model().append(parent2, ("", "" , "", "H :False", 0, 'H'))
+      self.treeview.get_model().append(parent2, ("", "" , "", "U :False", 0, 'U'))
+      self.treeview.get_model().append(parent2, ("", "" , "", "N :False", 0, 'N'))
+      self.treeview.get_model().append(parent2, ("", "" , "", "Z :False", 0, 'Z'))
+      self.treeview.get_model().append(parent2, ("", "" , "", "V :False", 0, 'V'))
+      self.treeview.get_model().append(parent2, ("", "" , "", "C :False", 0, 'C'))
+      self.treeview.get_model().append(parent, ("", "" , "", "STACK", 0, 'STACK'))
       
   def drawView(self) :
     i = self.treeview.get_model().iter_children(None)
     while i :
-      if int(self.treeview.get_model().get_value(i, 1), 16) == self.pc :
+      if self.treeview.get_model().get_value(i, 4) == self.pc :
         self.treeview.get_model().set_value(i, 0, 'PC=')
         
-        for x in range(8) :
-          r = self.sim.get32bitRegistor(x)
-          j = self.treeview.get_model().iter_children(i)
-          while j :
-            if self.treeview.get_model().get_value(j, 3)[:3] == ("ER%d"%x) :
-              self.treeview.get_model().set_value(j, 3, "ER%d:%06X" % (x, r))
-            j = self.treeview.get_model().iter_next(j)
+        j = self.treeview.get_model().iter_children(i)
+        while j :
+          for x in range(8) :
+            if self.treeview.get_model().get_value(j, 5) == "ER%d"%x :
+              r = self.sim.get32bitRegistor(x)
+              self.treeview.get_model().set_value(j, 3, "ER%d:%08X" % (x, r))
+              self.treeview.get_model().set_value(j, 4, x)
             
-        j = self.treeview.get_model().iter_children(i)
-        while j :
-          if self.treeview.get_model().get_value(j, 3)[:2] == "PC" :
+          if self.treeview.get_model().get_value(j, 5) == "PC" :
             pc = self.sim.getProgramCounter()
-            self.treeview.get_model().set_value(j, 3, "PC :%06X"%pc)
-          j = self.treeview.get_model().iter_next(j)
+            self.treeview.get_model().set_value(j, 3, "PC :%08X"%pc)
+            self.treeview.get_model().set_value(j, 4, pc)
           
-        j = self.treeview.get_model().iter_children(i)
-        while j :
-          if self.treeview.get_model().get_value(j, 3)[:3] == "CCR" :
+          if self.treeview.get_model().get_value(j, 5) == "CCR" :
             ccr = self.sim.getConditionCode()
-            self.treeview.get_model().set_value(j, 3, "CCR:%06X"%ccr)
+            self.treeview.get_model().set_value(j, 3, "CCR:%08X"%ccr)
+            self.treeview.get_model().set_value(j, 4, ccr)
             k = self.treeview.get_model().iter_children(j)
             while k :
-              if self.treeview.get_model().get_value(k, 3)[:1] == "I" :
+              if self.treeview.get_model().get_value(k, 5)[:1] == "I" :
                 self.treeview.get_model().set_value(k, 3, "I :"+str(self.sim.conditionCodeI))
-              elif self.treeview.get_model().get_value(k, 3)[:2] == "UI" :
+                self.treeview.get_model().set_value(k, 4, int(self.sim.conditionCodeI))
+              elif self.treeview.get_model().get_value(k, 5)[:2] == "UI" :
                 self.treeview.get_model().set_value(k, 3, "UI:"+str(self.sim.conditionCodeUI))
-              elif self.treeview.get_model().get_value(k, 3)[:1] == "H" :
+                self.treeview.get_model().set_value(k, 4, int(self.sim.conditionCodeUI))
+              elif self.treeview.get_model().get_value(k, 5)[:1] == "H" :
                 self.treeview.get_model().set_value(k, 3, "H :"+str(self.sim.conditionCodeH))
-              elif self.treeview.get_model().get_value(k, 3)[:1] == "U" :
+                self.treeview.get_model().set_value(k, 4, int(self.sim.conditionCodeH))
+              elif self.treeview.get_model().get_value(k, 5)[:1] == "U" :
                 self.treeview.get_model().set_value(k, 3, "U :"+str(self.sim.conditionCodeU))
-              elif self.treeview.get_model().get_value(k, 3)[:1] == "N" :
+                self.treeview.get_model().set_value(k, 4, int(self.sim.conditionCodeU))
+              elif self.treeview.get_model().get_value(k, 5)[:1] == "N" :
                 self.treeview.get_model().set_value(k, 3, "N :"+str(self.sim.conditionCodeN))
-              elif self.treeview.get_model().get_value(k, 3)[:1] == "Z" :
+                self.treeview.get_model().set_value(k, 4, int(self.sim.conditionCodeN))
+              elif self.treeview.get_model().get_value(k, 5)[:1] == "Z" :
                 self.treeview.get_model().set_value(k, 3, "Z :"+str(self.sim.conditionCodeZ))
-              elif self.treeview.get_model().get_value(k, 3)[:1] == "V" :
+                self.treeview.get_model().set_value(k, 4, int(self.sim.conditionCodeZ))
+              elif self.treeview.get_model().get_value(k, 5)[:1] == "V" :
                 self.treeview.get_model().set_value(k, 3, "V :"+str(self.sim.conditionCodeV))
-              elif self.treeview.get_model().get_value(k, 3)[:1] == "C" :
+                self.treeview.get_model().set_value(k, 4, int(self.sim.conditionCodeV))
+              elif self.treeview.get_model().get_value(k, 5)[:1] == "C" :
                 self.treeview.get_model().set_value(k, 3, "C :"+str(self.sim.conditionCodeC))
+                self.treeview.get_model().set_value(k, 4, int(self.sim.conditionCodeC))
               k = self.treeview.get_model().iter_next(k)
+              
+          if self.treeview.get_model().get_value(j, 5) == "STACK" :
+            k = self.treeview.get_model().iter_children(j)
+            while k :
+              self.treeview.get_model().remove(k)
+              k = self.treeview.get_model().iter_children(j)
+            address = self.sim.get32bitRegistor(7)
+            while address < 0x600000 :
+              self.treeview.get_model().append(j, ("", "%08X"%address , "", "%02X"%self.sim.get8bitRegistor(address) , 0, 'N'))
+              address += 1
+            
           j = self.treeview.get_model().iter_next(j)
       else :
         self.treeview.get_model().set_value(i, 0, '')
@@ -126,7 +149,7 @@ class H8SimGUI :
     self.sim.runStep()
     self.drawView()
     if self.running :
-      gobject.timeout_add(500, self.runStep)
+      gobject.timeout_add(100, self.runStep)
 
   def showFileChooserDialog(self, widget, event) :
     self.filechooserdialog.show()
