@@ -7,7 +7,6 @@ import pango
 sys.path.append("python-h8simulator")
 from simpleh8simulator import *
 
-
 class H8SimGUI :
   def __init__(self) :
     self.builder = gtk.Builder()
@@ -34,6 +33,7 @@ class H8SimGUI :
     self.run_button.connect("clicked", self.sim_run)
     self.step_button.connect("clicked", self.sim_step)
     self.reset_button.connect("clicked", self.sim_reset)
+    self.window.connect("delete-event", self.exit);
 
     self.treeview.modify_font(pango.FontDescription('Courier'))
     self.treeview.append_column(gtk.TreeViewColumn('', gtk.CellRendererText(), text=0))
@@ -151,6 +151,9 @@ class H8SimGUI :
     if self.running :
       gobject.timeout_add(100, self.runStep)
 
+  def main(self) :
+    gtk.main()
+    
   def showFileChooserDialog(self, widget, event) :
     self.filechooserdialog.show()
 
@@ -172,11 +175,8 @@ class H8SimGUI :
   def sim_reset(self, widget) :
     self.sim.reset()
     
-  def main(self) :
-    gtk.main()
-    
   def exit(self, windows, event) :
-    sys.exit(0)
+    gtk.main_quit()
 
 if __name__ == "__main__" :
   app = H8SimGUI()
