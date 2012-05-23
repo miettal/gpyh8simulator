@@ -28,8 +28,8 @@ class H8SimGUI :
     self.fdialog_cancel_button = self.builder.get_object("button5")
     
     self.fdialog_ok_button.connect("clicked", self.hideFileChooserDialog)
-    self.menu_open_item.connect("button-release-event", self.showFileChooserDialog)
-    self.menu_exit_item.connect("button-release-event", self.exit)
+    self.menu_open_item.connect("activate", self.showFileChooserDialog)
+    self.menu_exit_item.connect("activate", self.exit)
     self.run_button.connect("clicked", self.sim_run)
     self.step_button.connect("clicked", self.sim_step)
     self.reset_button.connect("clicked", self.sim_reset)
@@ -154,7 +154,7 @@ class H8SimGUI :
   def main(self) :
     gtk.main()
     
-  def showFileChooserDialog(self, widget, event) :
+  def showFileChooserDialog(self, widget) :
     self.filechooserdialog.show()
 
   def hideFileChooserDialog(self, widget) :
@@ -175,7 +175,7 @@ class H8SimGUI :
   def sim_reset(self, widget) :
     self.sim.reset()
     
-  def exit(self, windows, event) :
+  def exit(self, windows) :
     gtk.main_quit()
 
 if __name__ == "__main__" :
