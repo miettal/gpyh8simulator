@@ -33,7 +33,7 @@ class H8SimGUI :
     self.run_button.connect("clicked", self.sim_run)
     self.step_button.connect("clicked", self.sim_step)
     self.reset_button.connect("clicked", self.sim_reset)
-    self.window.connect("delete-event", self.exit);
+    self.window.connect("destroy", self.exit);
 
     self.treeview.modify_font(pango.FontDescription('Courier'))
     self.treeview.append_column(gtk.TreeViewColumn('', gtk.CellRendererText(), text=0))
