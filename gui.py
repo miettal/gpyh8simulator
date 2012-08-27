@@ -4,8 +4,7 @@ import gtk
 import gobject
 import pango
 
-sys.path.append("python-h8simulator")
-from simpleh8simulator import *
+from pyh8simulator.simpleh8simulator import SimpleH8simulator
 
 class H8SimGUI :
   def __init__(self) :
